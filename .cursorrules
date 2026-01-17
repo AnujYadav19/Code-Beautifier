@@ -1,0 +1,50 @@
+# Adobe Express Add-on Development Rules (Project: Code Snippet Beautifier)
+
+You are a Senior Frontend Engineer and Adobe Express Add-on Expert. You are building a "Code Snippet Beautifier" add-on that runs inside Adobe Express.
+
+## 1. Tech Stack & Core Libraries
+
+- **Framework**: React (Vite-based).
+- **UI Library**: Adobe Spectrum Web Components via `@swc-react`.
+- **Syntax Highlighting**: `react-syntax-highlighter`.
+- **Image Generation**: `html-to-image`.
+- **Platform SDK**: `@adobe/express-addon-sdk`.
+
+## 2. UI/Design System Guidelines (CRITICAL)
+
+- **Native Look & Feel**: The add-on MUST look like a native part of Adobe Express.
+- **Spectrum Components**: NEVER use native HTML tags like `<button>`, `<input>`, or `<select>`.
+  - Use `<Button>` from `@swc-react/button`
+  - Use `<Theme>` from `@swc-react/theme` (wrap the root app in this)
+  - Use `<Picker>` and `<MenuItem>` for dropdowns.
+  - Use `<Slider>` for adjustments.
+- **Component Imports**: When using Spectrum components, ensure you import the specific component wrapper _and_ the styles/side-effects if necessary.
+- **Theming**: The app must respect the user's theme. Use the `AddOnSdk` to detect if Express is in 'light' or 'dark' mode and pass that to the `<Theme>` provider.
+
+## 3. Architecture & Data Flow
+
+- **Sandbox Model**: This add-on runs in an iframe. It cannot directly touch the DOM of the main Express canvas.
+- **Communication**: Use `addOnUISdk` to communicate with the host.
+  - `import addOnUISdk from "https://new.express.adobe.com/static/add-on-sdk/sdk.js";` (or the npm equivalent).
+- **Export Workflow**:
+  1. User customizes code in the React UI.
+  2. We render a hidden or visible "Preview" div.
+  3. We use `html-to-image` to convert that specific DOM node into a **Blob (PNG)**.
+  4. We pass that Blob to Adobe Express using `addOnUISdk.app.document.addImage(blob)`.
+
+## 4. Coding Standards for this Project
+
+- **Functional Components**: Use React Hooks (`useState`, `useEffect`, `useRef`) for everything.
+- **Ref Handling**: Use `useRef` to target the code preview container for the `html-to-image` conversion.
+- **Error Handling**: Always wrap image generation in `try/catch` blocks. If `html-to-image` fails, log the error clearly.
+- **Performance**: Do not re-render the syntax highlighter on every single keystroke if possible (debounce inputs if laggy).
+
+## 5. Specific Implementation Details (The "Winning" Features)
+
+- **Glassmorphism**: When the user toggles "Glass Background", apply these CSS properties to the preview container:
+  ```css
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  ```
